@@ -1,0 +1,6 @@
+[submodule "components/esp_lua"]
+	path = components/esp_lua
+	url = https://github.com/xiongyumail/esp_lua
+[submodule "components/esp_lua_lib"]
+	path = components/esp_lua_lib
+	url = https://github.com/xiongyumail/esp_lua_lib

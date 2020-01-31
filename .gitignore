@@ -1,0 +1,8 @@
+build
+lua
+lua.bin
+sdkconfig
+sdkconfig.old
+
+# VS Code Settings
+.vscode/
