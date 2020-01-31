@@ -12,6 +12,7 @@ print(base_url)
 local mqtt_connected = false
 web.mqtt('START', 'mqtt://mqtt.emake.run', 100)
 local last_clock = 0
+local loop = 0
 while (1) do
     event, data = web.mqtt('HANDLE', 10)
     if (event) then
@@ -35,10 +36,16 @@ while (1) do
     end
     if (mqtt_connected and os.difftime (os.time(), last_clock) >= 30) then
         nc_temp = web.rest('GET', base_url..'&location=nanchang')
+        if (nc_temp) then
+            web.mqtt('PUB', 'nc_temp', nc_temp, 0)
+        end
         sh_temp = web.rest('GET', base_url..'&location=shanghai')
-        web.mqtt('PUB', 'nc_temp', nc_temp, 0)
-        web.mqtt('PUB', 'sh_temp', sh_temp, 0)
+        if (sh_temp) then
+            web.mqtt('PUB', 'sh_temp', sh_temp, 0)
+        end
+        web.mqtt('PUB', 'test', string.format("time: %s, clock: %f, heap: %d, loop: %d", os.date("%Y-%m-%d %H:%M:%S"), os.clock(), sys.heap(), loop), 1)
         last_clock = os.time()
     end
-    print('clock: '..os.clock()..', heap: '..sys.heap())
+    loop = loop + 1
+    print(string.format("clock: %f, heap: %d, loop: %d", os.clock(), sys.heap(), loop))
 end
