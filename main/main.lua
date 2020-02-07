@@ -5,7 +5,7 @@ assert(wifi.init('CMCC-GPcG', 'etb3rzz7'))
 assert(sys.sntp('ntp1.aliyun.com'))
 print(os.date("%Y-%m-%d %H:%M:%S"))
 
-local base_url  = 'https://api.seniverse.com/v3/weather/now.json?key=lsawo7f7smtdljg9&language=zh-Hans&unit=c'
+local base_url  = 'http://api.seniverse.com/v3/weather/now.json?key=lsawo7f7smtdljg9&language=zh-Hans&unit=c'
 
 print(base_url)
 
