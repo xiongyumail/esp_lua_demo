@@ -4,6 +4,7 @@ local wifi = require('wifi')
 
 print(dump.table(sys.info()))
 if (not wifi.start_sta()) then
+    print('Connect to AP and log in to http://192.168.1.1 and configure router information')
     wifi.start_ap('ESP_LUA', '')
 end
 print(dump.table(net.info()))

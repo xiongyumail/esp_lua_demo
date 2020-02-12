@@ -5,5 +5,5 @@ git submodule update --init --recursive
 ```
 
 ```bash
-./components/esp_lua_lib/lua_flash.sh
+./components/esp_lua_lib/tools/lua_flash.sh
 ```
