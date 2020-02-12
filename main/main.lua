@@ -1,7 +1,12 @@
 local json = require('json')
-local dumpTable = require('dumpTable')
+local dump = require('dump')
+local wifi = require('wifi')
 
-assert(wifi.init('CMCC-GPcG', 'etb3rzz7')) 
+print(dump.table(sys.info()))
+if (not wifi.start_sta()) then
+    wifi.start_ap('ESP_LUA', '')
+end
+print(dump.table(net.info()))
 assert(sys.sntp('ntp1.aliyun.com'))
 print(os.date("%Y-%m-%d %H:%M:%S"))
 
@@ -10,42 +15,53 @@ local base_url  = 'http://api.seniverse.com/v3/weather/now.json?key=lsawo7f7smtd
 print(base_url)
 
 local mqtt_connected = false
-web.mqtt('START', 'mqtt://mqtt.emake.run', 100)
+mqtt.start('mqtt://mqtt.emake.run')
 local last_clock = 0
-local loop = 0
+local info = {['loop'] = 0}
 while (1) do
-    event, data = web.mqtt('HANDLE', 10)
-    if (event) then
-        if (event == 'MQTT_EVENT_DATA') then
-            t = json.decode(data)
-            printTable(t)
-            if (t.topic == 'sys') then
-                if (t.data == 'stop') then -- mosquitto_pub -h mqtt.emake.run -t sys -m "\"stop\""
-                    web.mqtt('STOP')
+    local handle = mqtt.run()
+    if (handle) then
+        if (handle.event == 'MQTT_EVENT_DATA') then
+            local t = json.decode(handle.data)
+            print(dump.table(t))
+            if (handle.topic == 'sys') then
+                if (handle.data == 'stop') then -- mosquitto_pub -h mqtt.emake.run -t sys -m "\"stop\""
+                    mqtt.stop()
                     break
                 end
             end
-        elseif (event == 'MQTT_EVENT_CONNECTED') then
+        elseif (handle.event == 'MQTT_EVENT_CONNECTED') then
             mqtt_connected = true
-            web.mqtt('SUB', 'nc_temp', 0)
-            web.mqtt('SUB', 'sh_temp', 0)
-            web.mqtt('SUB', 'sys', 0)
-        elseif (event == 'MQTT_EVENT_DISCONNECTED') then
+            mqtt.sub('nc_temp', 0)
+            mqtt.sub('sh_temp', 0)
+            mqtt.sub('sys', 0)
+        elseif (handle.event == 'MQTT_EVENT_DISCONNECTED') then
             mqtt_connected = false
         end
     end
     if (mqtt_connected and os.difftime (os.time(), last_clock) >= 30) then
-        nc_temp = web.rest('GET', base_url..'&location=nanchang')
+        local nc_temp = web.rest('GET', base_url..'&location=nanchang')
         if (nc_temp) then
-            web.mqtt('PUB', 'nc_temp', nc_temp, 0)
+            mqtt.pub('nc_temp', nc_temp, 0)
         end
-        sh_temp = web.rest('GET', base_url..'&location=shanghai')
+        local sh_temp = web.rest('GET', base_url..'&location=shanghai')
         if (sh_temp) then
-            web.mqtt('PUB', 'sh_temp', sh_temp, 0)
+            mqtt.pub('sh_temp', sh_temp, 0)
         end
-        web.mqtt('PUB', 'test', string.format("time: %s, clock: %f, heap: %d, loop: %d", os.date("%Y-%m-%d %H:%M:%S"), os.clock(), sys.heap(), loop), 1)
+        info.clock = os.clock()
+        info.date = os.date("%Y-%m-%d %H:%M:%S")
+        info.info = sys.info()
+        mqtt.pub('test', json.encode(info), 1)
         last_clock = os.time()
     end
-    loop = loop + 1
-    print(string.format("clock: %f, heap: %d, loop: %d", os.clock(), sys.heap(), loop))
+    
+    info.clock = os.clock()
+    info.date = os.date("%Y-%m-%d %H:%M:%S")
+    info.info = sys.info()
+    info.loop = info.loop + 1
+    print(json.encode(info))
+
+    if (not handle) then
+        sys.yield()
+    end
 end

@@ -14,9 +14,11 @@
 static const char *TAG = "main";
 
 static const luaL_Reg mylibs[] = {
-    {"sys", esp_lua_lib_sys},
-    {"wifi", esp_lua_lib_wifi},
-    {"web", esp_lua_lib_web},
+    {"sys", esp_lib_sys},
+    {"net", esp_lib_net},
+    {"web", esp_lib_web},
+    {"mqtt", esp_lib_mqtt},
+    {"httpd", esp_lib_httpd},
     {NULL, NULL}
 };
 
@@ -34,7 +36,7 @@ void lua_task(void *arg)
     while (1) {
         esp_lua_main(4, ESP_LUA_ARGV);
         printf("lua exit\n");
-        vTaskDelay(1000 / portTICK_RATE_MS);
+        vTaskDelay(2000 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
