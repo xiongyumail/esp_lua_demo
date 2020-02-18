@@ -3,7 +3,7 @@ local dump = require('dump')
 local wifi = require('wifi')
 
 print(dump.table(sys.info()))
-if (not wifi.start_sta()) then
+if (not wifi.start_sta('ESP', '123456789')) then
     print('Connect to AP and log in to http://192.168.1.1 and configure router information')
     wifi.start_ap('ESP_LUA', '')
 end
@@ -11,7 +11,9 @@ print(dump.table(net.info()))
 assert(sys.sntp('ntp1.aliyun.com'))
 print(os.date("%Y-%m-%d %H:%M:%S"))
 
-local base_url  = 'http://api.seniverse.com/v3/weather/now.json?key=lsawo7f7smtdljg9&language=zh-Hans&unit=c'
+local key = '&key=lsawo7f7smtdljg9'
+
+local base_url  = 'http://api.seniverse.com/v3/weather/now.json?language=en&unit=c'..key
 
 print(base_url)
 
