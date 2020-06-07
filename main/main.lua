@@ -5,20 +5,21 @@ wifi = require('wifi')
 while (1) do
     s = ''
     while (1) do
-        c = io.read(1)
+        c = io.read("*L")
         if (c) then
             s = s..c
-            if (c == '\n') then
-                break
+            if (string.find(s, "\n")) then
+                break;
+            else
+                sys.yield()  
             end
         else
-            sys.yield()
+            sys.yield() 
         end
     end
 
-    f = load('return '..s)
-    if (f) then
-        print(f())
+    if pcall(load(s)) then
+        print('true')
     else
         print('false')
     end
